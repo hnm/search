@@ -1,6 +1,6 @@
 {
     "name": "hnm/search",
-    "type": "n2n-tmpl-module",
+    "type": "n2n-module",
     "description": "Search module for n2n",
     "keywords": ["n2n-tmpl-module", "n2n-module", "n2n"],
     "homepage": "https://n2n.rocks/",
