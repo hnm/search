@@ -1,0 +1,36 @@
+.search-result-box {
+    display: none;
+}
+
+.search-result-header {
+    padding: 15px;
+    border-bottom: 1px solid #EEEEEE;
+}
+
+.search-result-list {
+    margin: 0px;
+    padding: 15px;
+    list-style: none;
+}
+
+.search-no-results-fallback {
+    padding: 15px;
+}
+
+.search-result-list li {
+    border-bottom: 1px solid #CCCCCC;
+}
+
+.search-entry-title {
+	margin-top: 1rem;
+}
+
+.search-entry-title > a {
+	text-decoration: none;
+}
+
+.search-result-close {
+    float: right;
+    cursor: pointer;
+}
+
