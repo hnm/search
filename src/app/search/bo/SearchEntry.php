@@ -5,6 +5,7 @@ use n2n\l10n\N2nLocale;
 use n2n\persistence\orm\annotation\AnnoManyToOne;
 use n2n\reflection\annotation\AnnoInit;
 use n2n\reflection\ObjectAdapter;
+use n2n\persistence\orm\CascadeType;
 
 /**
  * Class SearchEntry
@@ -13,7 +14,7 @@ use n2n\reflection\ObjectAdapter;
  */
 class SearchEntry extends ObjectAdapter {
 	private static function _annos(AnnoInit $ai) {
-		$ai->p('group', new AnnoManyToOne(SearchGroup::getClass()));
+		$ai->p('group', new AnnoManyToOne(SearchGroup::getClass(), CascadeType::PERSIST));
 	}
 
 	/**
