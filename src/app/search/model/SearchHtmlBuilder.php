@@ -217,35 +217,45 @@ class SearchHtmlBuilder {
 		$checkNextWord = true;
 		
 		foreach (explode(' ', trim($searchEntry->getSearchableText())) as $word) {
+			if (empty($word)) {
+				if (!empty($foundParts)) {
+					break;
+				}
+				$wordsBefore = [];
+				continue;
+			}
+			
 			if (empty($foundParts) || $checkNextWord) {
 				$checkNextWord = false;
 				foreach (explode(' ', trim($highlight)) as $needleWord) {
-					if (empty($needleWord) || strpos(strtolower($word), strtolower($needleWord)) < 0) continue;
-					
-					$foundParts[] = $needleWord;
+					if (empty($needleWord) || mb_strpos(strtolower($word), strtolower($needleWord)) === false) continue;
+					$foundParts[] = $word;
 					$checkNextWord = true;
 					break;
 				}
+				
+				if (empty($foundParts)) {
+					$wordsBefore[] = $word;
+					//include current word
+					if (count($wordsBefore) > $numWordsToSafe + 1) {
+						array_shift($wordsBefore);
+					}
+				} elseif (!$checkNextWord) {
+					$wordsAfter[] = $word;
+				}
+				continue;
 			}
 			
 			if (!empty($foundParts)) {
 				$wordsAfter[] = $word;
 				if (count($wordsAfter) >= $numWordsToSafe) break;
-				
-				continue;
 			} 
-			
-			$wordsBefore[] = $word;
-			//include current word
-			if (count($wordsBefore) > $numWordsToSafe + 1) {
-				array_shift($wordsBefore);
-			}
 			
 		}
 		
 		if (empty($foundParts)) return null;
 		
-		return implode(' ', $wordsBefore) + implode(' ', $foundParts) + implode(' ', $wordsAfter);
+		return '...' . implode(' ', array_merge($wordsBefore, $foundParts, $wordsAfter)) . '...';
 	}
 
 	/**
