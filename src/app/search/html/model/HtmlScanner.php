@@ -4,6 +4,7 @@ namespace search\html\model;
 use search\html\bo\HtmlScan;
 use search\html\bo\HtmlTag;
 use n2n\util\StringUtils;
+use n2n\util\type\CastUtils;
 
 /**
  * Class HtmlScanner
@@ -11,7 +12,8 @@ use n2n\util\StringUtils;
  * @package html\model
  */
 class HtmlScanner {
-	const SELF_CLOSING_HTML_TAGS = array('area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr');
+	const SELF_CLOSING_HTML_TAGS = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
+	const EXCLUDE_HTML_TAGS = ['script'];
 
 	/**
 	 * Easy way to create a HtmlScan by htmlStr
@@ -34,7 +36,11 @@ class HtmlScanner {
 			if ($char === '<' && !$inStrChar && !$escaped) {
 				if (!$inHtmlTagDefinition) {
 					if (isset($htmlTagLvls[$curLvl - 1])) {
-						end($htmlTagLvls[$curLvl - 1])->addText(html_entity_decode($currentHtmlTagRawText));
+						$tag = end($htmlTagLvls[$curLvl - 1]);
+						CastUtils::assertTrue($tag instanceof HtmlTag);
+						if (!in_array($tag->getName(), self::EXCLUDE_HTML_TAGS)) {
+							$tag->addText(html_entity_decode($currentHtmlTagRawText));
+						}
 						$currentHtmlTagRawText = '';
 					}
 				}
@@ -45,7 +51,6 @@ class HtmlScanner {
 			if ($char === '>' && $inHtmlTagDefinition && !$escaped && !$inStrChar) {
 
 				$htmlTagDefinitionStr .= $char;
-
 				if (StringUtils::startsWith('</', $htmlTagDefinitionStr)) {
 					$curLvl--;
 				} elseif (!StringUtils::startsWith('<!', $htmlTagDefinitionStr)) {

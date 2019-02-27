@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS `search_group` (
 -- Exportiere Struktur von Tabelle halter.search_group_t
 CREATE TABLE IF NOT EXISTS `search_group_t` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `group_key` int(10) unsigned DEFAULT NULL,
+  `group_key` varchar(50) NULL DEFAULT NULL,
   `label` varchar(255) DEFAULT NULL,
   `url_str` varchar(255) DEFAULT NULL,
   `n2n_locale` varchar(12) DEFAULT NULL,
