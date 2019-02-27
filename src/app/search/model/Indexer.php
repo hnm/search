@@ -13,6 +13,7 @@ use n2n\web\ui\view\View;
 use search\bo\SearchEntry;
 use search\IndexerException;
 use search\model\dao\SearchEntryDao;
+use rocket\core\model\Rocket;
 
 /**
  * Class Indexer is used to create and persist {@see SearchEntry}.
@@ -51,11 +52,16 @@ class Indexer implements RequestScoped {
 	 * @var TransactionManager
 	 */
 	private $tm;
+	/**
+	 * @var Rocket
+	 */
+	private $rocket;
 
-	private function _init(SearchEntryDao $sed, Response $response, TransactionManager $tm) {
+	private function _init(SearchEntryDao $sed, Response $response, TransactionManager $tm, Rocket $rocket) {
 		$this->sed = $sed;
 		$this->response = $response;
 		$this->tm = $tm;
+		$this->rocket = $rocket;
 	}
 
 	/**
@@ -126,7 +132,10 @@ class Indexer implements RequestScoped {
 	 */
 	public function addFromHtmlView(View $view, array $allowedQueryParams = array(), string $groupKey = null,
 				bool $autoTitle = true, bool $autoKeywords = true, bool $autoDescription = true) {
-
+		if ($this->rocket->isActive()) {
+			return null;
+		}
+		
 		$searchEntry = $this->createFromHtml($view->getRequest()->getUrl(), $allowedQueryParams, $view->getContents(), $view->getN2nLocale(), $groupKey, $autoTitle, $autoKeywords, $autoDescription);
 		$this->addEntry($searchEntry);
 
@@ -138,6 +147,10 @@ class Indexer implements RequestScoped {
 	 * @return SearchEntry
 	 */
 	public function addFromResponse(array $allowedParams = array(), string $groupKey = null, $autoTitle = true, $autoKeywords = true, $autoDescription = true) {
+		if ($this->rocket->isActive()) {
+			return null;
+		}
+		
 		if ($this->response->getSentPayload() === null) {
 			throw new IndexerException('Add by Response can only be executed right after ControllingUtilsTrait::forward()');
 		}

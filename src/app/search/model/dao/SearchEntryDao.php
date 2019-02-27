@@ -103,20 +103,18 @@ class SearchEntryDao implements RequestScoped {
 	public function findSearchEntriesBySearchStr(string $searchStr, N2nLocale $n2nLocale, array $groupKeys = null) {
 		if ($searchStr === '') return array();
 
-		$params = array(':n2nLocale' => $n2nLocale, ':searchStr' => $searchStr);
+		$params = array(':n2nLocale' => $n2nLocale->getId(), ':searchStr' => $searchStr);
 		$groupKeyAnd = '';
 		if ($groupKeys !== null) {
 			$groupKeyAnd = 'AND (';
 
 			$lastGroupKeyAnd = end($groupKeys);
-			foreach ($groupKeys as $i => $groupKey) {
-				$i = (int) $i;
-
-				$params['groupKey' . $i] = $groupKey;
+			$i = 0;
+			foreach ($groupKeys as $groupKey) {
+				$params[':groupKey' . $i] = $groupKey;
 
 				$groupKeyAnd .= 'se.group_key = ' . ':groupKey' . $i;
-
-				if ($groupKey !== $lastGroupKeyAnd) {
+				if (++$i != count($groupKeys)) {
 					$groupKeyAnd .= ' OR ';
 				}
 			}
@@ -131,7 +129,11 @@ class SearchEntryDao implements RequestScoped {
 
 			$params[':parts' . $i] = '%' . $part . '%';
 			if ($part === '') continue;
-			($i === 0) ? $word = '' : $word = PHP_EOL . 'AND';
+			if ($i === 0) {
+				$word = '';
+			} else {
+				$word = PHP_EOL . 'AND';
+			}
 			$partsStr .= $word . ' (se.keywords_str LIKE ' . ':parts' . $i
 				. ' OR se.searchable_text LIKE ' . ':parts' . $i . ')';
 		}

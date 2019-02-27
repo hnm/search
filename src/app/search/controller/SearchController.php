@@ -1,7 +1,6 @@
 <?php
 namespace search\controller;
 
-use n2n\impl\web\ui\view\html\HtmlResponse;
 use n2n\l10n\N2nLocale;
 use n2n\util\StringUtils;
 use n2n\web\http\controller\ControllerAdapter;
@@ -40,14 +39,14 @@ class SearchController extends ControllerAdapter {
 		}
 
 		if ($gk !== null) {
-			$gk = StringUtils::jsonDecode($gk);
+			$gk = StringUtils::jsonDecode($gk, true);
 		}
 
 		$ss = $ss->__toString();
-		$nl = N2nLocale::fromWebId((string) $nl->__toString());
+		$nl = N2nLocale::fromWebId((string) $nl);
 		
 		if (trim($ss) === '') {
-			$this->send(new HtmlResponse(SearchHtmlBuilder::getResultContent(array(), $ss, $nl)));
+			$this->sendHtmlUi(SearchHtmlBuilder::getResultContent(array(), $ss, $nl));
 			return;
 		}
 
@@ -70,8 +69,7 @@ class SearchController extends ControllerAdapter {
 			}
 		}
 		
-		$this->send(new HtmlResponse(SearchHtmlBuilder::getResultContent($foundSearchEntries, $ss, $nl)));
-		return;
+		$this->sendHtmlUi(SearchHtmlBuilder::getResultContent($foundSearchEntries, $ss, $nl));
 	}
 
 	/**

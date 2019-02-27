@@ -189,7 +189,7 @@ class SearchHtmlBuilder {
 			$h2->appendContent(new HtmlElement('a', array('href' => $searchEntry->getUrlStr()), self::highlight($highlight, $searchEntry->getTitle())));
 
 			$li->appendLn($h2);
-			if (null !== ($description = $searchEntry->getDescription()) && $description !== '') {
+			if (!empty($description = self::determineDescription($searchEntry, $highlight))) {
 				$li->appendLn(new HtmlElement('p', null, self::highlight($highlight, $description)));
 			}
 
@@ -203,6 +203,49 @@ class SearchHtmlBuilder {
 		}
 
 		return $ul;
+	}
+	
+	public static function determineDescription(SearchEntry $searchEntry, string $highlight = null) {
+		$description = $searchEntry->getDescription();
+		if (!empty($description)) return $description;
+		if (null === $highlight) return null;
+		
+		$numWordsToSafe = 10;
+		$wordsBefore = [];
+		$wordsAfter = [];
+		$foundParts = [];
+		$checkNextWord = true;
+		
+		foreach (explode(' ', trim($searchEntry->getSearchableText())) as $word) {
+			if (empty($foundParts) || $checkNextWord) {
+				$checkNextWord = false;
+				foreach (explode(' ', trim($highlight)) as $needleWord) {
+					if (empty($needleWord) || strpos(strtolower($word), strtolower($needleWord)) < 0) continue;
+					
+					$foundParts[] = $needleWord;
+					$checkNextWord = true;
+					break;
+				}
+			}
+			
+			if (!empty($foundParts)) {
+				$wordsAfter[] = $word;
+				if (count($wordsAfter) >= $numWordsToSafe) break;
+				
+				continue;
+			} 
+			
+			$wordsBefore[] = $word;
+			//include current word
+			if (count($wordsBefore) > $numWordsToSafe + 1) {
+				array_shift($wordsBefore);
+			}
+			
+		}
+		
+		if (empty($foundParts)) return null;
+		
+		return implode(' ', $wordsBefore) + implode(' ', $foundParts) + implode(' ', $wordsAfter);
 	}
 
 	/**
