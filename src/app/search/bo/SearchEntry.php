@@ -79,6 +79,7 @@ class SearchEntry extends ObjectAdapter {
 	    $this->title = $title;
 		$this->description = $description;
 		$this->keywordsStr = $keywordsStr;
+		$this->lastChecked = new \DateTime();
 	}
 
 
