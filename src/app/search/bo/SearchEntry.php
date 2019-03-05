@@ -205,7 +205,7 @@ class SearchEntry extends ObjectAdapter {
 	/**
 	 * @param \DateTime $lastChecked
 	 */
-	public function setLastChecked($lastChecked) {
+	public function setLastChecked(\DateTime $lastChecked = null) {
 		$this->lastChecked = $lastChecked;
 	}
 }
