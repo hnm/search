@@ -79,6 +79,7 @@ class SearchEntry extends ObjectAdapter {
 	    $this->title = $title;
 		$this->description = $description;
 		$this->keywordsStr = $keywordsStr;
+		$this->lastChecked = new \DateTime();
 	}
 
 
@@ -92,7 +93,7 @@ class SearchEntry extends ObjectAdapter {
 	/**
 	 * @param int $id
 	 */
-	public function setId(int $id) {
+	public function setId($id) {
 		$this->id = $id;
 	}
 
@@ -204,7 +205,7 @@ class SearchEntry extends ObjectAdapter {
 	/**
 	 * @param \DateTime $lastChecked
 	 */
-	public function setLastChecked($lastChecked) {
+	public function setLastChecked(\DateTime $lastChecked = null) {
 		$this->lastChecked = $lastChecked;
 	}
 }

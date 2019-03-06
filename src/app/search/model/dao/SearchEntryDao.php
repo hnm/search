@@ -75,13 +75,14 @@ class SearchEntryDao implements RequestScoped {
 		return $this->em->createNqlCriteria('SELECT se FROM SearchEntry se
 				WHERE ' . $groupKeyClause, $params)->toQuery()->fetchArray();
 	}
-
+	
 	/**
 	 * Returns Search entries sorted by lastChecked date.
 	 * @return SearchEntry[]
 	 */
-	public function getSearchEntriesSortedByDate() {
-		return $this->em->createSimpleCriteria(SearchEntry::getClass(), null, array('lastChecked' => 'ASC'))->toQuery()->fetchArray();
+	public function getSearchEntriesSortedByDate(int $num = null) {
+		return $this->em->createSimpleCriteria(SearchEntry::getClass(), null, 
+				array('lastChecked' => 'ASC'), $num)->toQuery()->fetchArray();
 	}
 
 	/**
