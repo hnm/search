@@ -19,18 +19,20 @@ class SearchBatchJob implements Lookupable {
 	}
 	
 	public function _onNewHour(SearchEntryDao $searchEntryDao) {
-		$tx = $this->tm->createTransaction();
 		foreach ($searchEntryDao->getSearchEntriesSortedByDate(3) as $searchEntry) {
 			try {
 				if ($this->isStatusOk($this->determineUrl($searchEntry->getUrlStr()))) {
+					$tx = $this->tm->createTransaction();
 					$searchEntry->setLastChecked(new \DateTime());
+					$tx->commit();
 					continue;
 				}
 			} catch (\InvalidArgumentException $e) {}
 			
+			$tx = $this->tm->createTransaction();
 			$searchEntryDao->removeEntry($searchEntry);
+			$tx->commit();
 		}
-		$tx->commit();
 	}
 	
 	private function determineUrl(string $urlStr) {
