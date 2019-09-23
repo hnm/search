@@ -193,9 +193,11 @@ class SearchHtmlBuilder {
 				$li->appendLn(new HtmlElement('p', null, self::highlight($highlight, $description)));
 			}
 
+			$li->appendLn(new HtmlElement('a', array('href' => $searchEntry->getUrlStr(), 'class' => 'search-url'), $searchEntry->getUrlStr()));
+
 			if (null !== ($searchGroup = $searchEntry->getGroup())) {
 				if (null !== ($searchGroupT = $searchGroup->t($n2nLocale))) {
-					$li->appendLn(new HtmlElement('a', array('href' => $searchGroupT->getUrlStr()), $searchGroupT->getLabel()));
+					$li->appendLn(new HtmlElement('a', array('href' => $searchGroupT->getUrlStr(), 'class' => 'search-group'), $searchGroupT->getLabel()));
 				}
 			}
 
