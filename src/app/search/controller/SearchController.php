@@ -32,8 +32,9 @@ class SearchController extends ControllerAdapter {
 	 * @param ParamGet $nl short for n2nLocale
 	 * @param ParamGet $gk short for groupKey
 	 * @param ParamGet $stat determines if this search must be in statistics
+	 * @param ParamGet $as short for append searchstring (to url)
 	 */
-	public function index(ParamGet $ss = null, ParamGet $nl = null, ParamGet $gk = null, ParamGet $stat = null) {
+	public function index(ParamGet $ss = null, ParamGet $nl = null, ParamGet $gk = null, ParamGet $stat = null, ParamGet $as = null) {
 		if ($ss === null || $nl === null) {
 			throw new PageNotFoundException();
 		}
@@ -45,8 +46,13 @@ class SearchController extends ControllerAdapter {
 		$ss = $ss->__toString();
 		$nl = N2nLocale::fromWebId((string) $nl);
 		
+		$appendSearchString = false;
+		if (null !== $as) {
+			$appendSearchString = $as->toBool();
+		}
+		
 		if (trim($ss) === '') {
-			$this->sendHtmlUi(SearchHtmlBuilder::getResultContent(array(), $ss, $nl));
+			$this->sendHtmlUi(SearchHtmlBuilder::getResultContent(array(), $ss, $nl, $appendSearchString));
 			return;
 		}
 
@@ -69,7 +75,7 @@ class SearchController extends ControllerAdapter {
 			}
 		}
 		
-		$this->sendHtmlUi(SearchHtmlBuilder::getResultContent($foundSearchEntries, $ss, $nl));
+		$this->sendHtmlUi(SearchHtmlBuilder::getResultContent($foundSearchEntries, $ss, $nl, $appendSearchString));
 	}
 
 	/**

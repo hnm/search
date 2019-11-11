@@ -177,33 +177,38 @@ class SearchHtmlBuilder {
 	 * @param int $numFound
 	 * @return HtmlElement
 	 */
-	public static function getResultContent($resultEntries = array(), string $highlight = null, N2nLocale $n2nLocale) {
+	public static function getResultContent($resultEntries = array(), string $highlight = null, N2nLocale $n2nLocale, bool $appendHighlight = false) {
 		$ul = new HtmlElement('ul', array('class' => 'search-result-list'), '');
 		if ($resultEntries === null) return $ul;
-		
+	
 		$ul->setAttrs(HtmlUtils::mergeAttrs($ul->getAttrs(), array('data-search-found-amount' => count($resultEntries))));
-		
+	
 		foreach ($resultEntries as $searchEntry) {
+			$href = $searchEntry->getUrlStr();
+			if ($appendHighlight) {
+				$href = Url::create($href)->queryExt(['q' => $highlight]);
+			}
+				
 			$li = new HtmlElement('li', array('class' => 'search-entry'));
 			$h2 = new HtmlElement('h2', array('class' => 'search-entry-title'));
-			$h2->appendContent(new HtmlElement('a', array('href' => $searchEntry->getUrlStr()), self::highlight($highlight, $searchEntry->getTitle())));
-
+			$h2->appendContent(new HtmlElement('a', array('href' => $href), self::highlight($highlight, $searchEntry->getTitle())));
+	
 			$li->appendLn($h2);
 			if (!empty($description = self::determineDescription($searchEntry, $highlight))) {
 				$li->appendLn(new HtmlElement('p', null, self::highlight($highlight, $description)));
 			}
-
-			$li->appendLn(new HtmlElement('a', array('href' => $searchEntry->getUrlStr(), 'class' => 'search-url'), $searchEntry->getUrlStr()));
-
+	
+			$li->appendLn(new HtmlElement('a', array('href' => $href, 'class' => 'search-url'), $searchEntry->getUrlStr()));
+	
 			if (null !== ($searchGroup = $searchEntry->getGroup())) {
 				if (null !== ($searchGroupT = $searchGroup->t($n2nLocale))) {
 					$li->appendLn(new HtmlElement('a', array('href' => $searchGroupT->getUrlStr(), 'class' => 'search-group'), $searchGroupT->getLabel()));
 				}
 			}
-
+	
 			$ul->appendContent($li);
 		}
-
+	
 		return $ul;
 	}
 	
