@@ -12,6 +12,7 @@ use n2n\web\ui\Raw;
 use n2n\web\ui\view\ViewErrorException;
 use n2nutil\jquery\JQueryLibrary;
 use search\bo\SearchEntry;
+use n2n\util\uri\Url;
 
 /**
  * Class SearchHtmlBuilder
