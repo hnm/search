@@ -128,7 +128,7 @@ class SearchEntryDao implements RequestScoped {
 		foreach (preg_split('/\s+/', $searchStr) as $i => $part) {
 			$i = (int) $i;
 
-			$params[':parts' . $i] = '%' . $part . '%';
+			$params[':parts' . $i] = '%' .  preg_replace('/(%|_)/', '\\\\$1', $part) . '%';
 			if ($part === '') continue;
 			if ($i === 0) {
 				$word = '';
