@@ -69,9 +69,15 @@ class Indexer implements RequestScoped {
 	 * @param SearchEntry $searchEntry
 	 */
 	public function addEntry(SearchEntry $searchEntry) {
-		$tx = $this->tm->createTransaction();
+		if (!$this->tm->hasOpenTransaction()) {
+			$tx = $this->tm->createTransaction();
+		}
+		
 		$this->sed->addEntry($searchEntry);
-		$tx->commit();
+		
+		if (!$this->tm->hasOpenTransaction()) {
+			$tx->commit();
+		}
 	}
 
 	/**
