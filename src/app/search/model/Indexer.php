@@ -69,13 +69,14 @@ class Indexer implements RequestScoped {
 	 * @param SearchEntry $searchEntry
 	 */
 	public function addEntry(SearchEntry $searchEntry) {
+		$tx = null;
 		if (!$this->tm->hasOpenTransaction()) {
 			$tx = $this->tm->createTransaction();
 		}
 		
 		$this->sed->addEntry($searchEntry);
 		
-		if (!$this->tm->hasOpenTransaction()) {
+		if ($tx !== null) {
 			$tx->commit();
 		}
 	}
@@ -143,6 +144,7 @@ class Indexer implements RequestScoped {
 		}
 		
 		$searchEntry = $this->createFromHtml($view->getRequest()->getUrl(), $allowedQueryParams, $view->getContents(), $view->getN2nLocale(), $groupKey, $autoTitle, $autoKeywords, $autoDescription);
+		
 		$this->addEntry($searchEntry);
 
 		return $searchEntry;
