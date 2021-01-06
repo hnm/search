@@ -70,8 +70,7 @@ class SearchEntry extends ObjectAdapter {
 	 * @param string $urlStr
 	 */
 	public function __construct(string $searchableText = null, string $urlStr = null, N2nLocale $n2nLocale = null,
-								string $title = null, string $description = null,
-								string $keywordsStr = null) {
+			string $title = null, string $description = null, string $keywordsStr = null) {
 
         $this->searchableText = $searchableText;
 	    $this->urlStr = $urlStr;
