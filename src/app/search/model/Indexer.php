@@ -269,7 +269,7 @@ class Indexer implements RequestScoped {
 		return new SearchGroup($key);
 	}
 
-	private function createFromHtml($url, array $allowedQueryParams = array(), string $searchableHtml,
+	private function createFromHtml($url, array $allowedQueryParams, string $searchableHtml,
 			N2nLocale $n2nLocale, string $groupKey = null, bool $autoTitle = true,
 			bool $autoKeywords = true, bool $autoDescription = true) {
 		$url = Url::create($url);

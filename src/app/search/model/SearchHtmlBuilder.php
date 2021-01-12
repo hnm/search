@@ -77,7 +77,7 @@ class SearchHtmlBuilder {
 	 * @return Raw
 	 */
 	public function getResultOpen(array $groupKeys = null, string $elementName = 'div', array $attrs = array(),
-			bool $useDefaultCss, string $jqueryHideSelector = null, string $fallback = null) {
+			bool $useDefaultCss = true, string $jqueryHideSelector = null, string $fallback = null) {
 
 		if ($useDefaultCss) {
 			$this->view->getHtmlBuilder()->meta()->addCss('css/style.css', null, 'search');
@@ -178,7 +178,7 @@ class SearchHtmlBuilder {
 	 * @param int $numFound
 	 * @return HtmlElement
 	 */
-	public static function getResultContent($resultEntries = array(), string $highlight = null, N2nLocale $n2nLocale, bool $appendHighlight = false) {
+	public static function getResultContent(?array $resultEntries, ?string $highlight, N2nLocale $n2nLocale, bool $appendHighlight = false) {
 		$ul = new HtmlElement('ul', array('class' => 'search-result-list'), '');
 		if ($resultEntries === null) return $ul;
 	
