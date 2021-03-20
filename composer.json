@@ -1,24 +1,27 @@
 {
-    "name": "hnm/search",
-    "type": "n2n-module",
-    "description": "Search module for n2n",
-    "keywords": ["n2n-tmpl-module", "n2n-module", "n2n"],
-    "homepage": "https://n2n.rocks/",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Thomas Günther",
-            "email": "guenther@hnm.ch"
-        }
-    ],
-    "require": {
-        "php": ">=7.0",
-        "n2n/n2n-composer-module-installer": "dev-master",
-        "n2n/rocket": "dev-master"
-    },
-    "autoload": {
-        "psr-4": {
-            "search\\": "src/app/search"
-        }
-    }
+	"name" : "hnm/search",
+	"type" : "n2n-module",
+	"description" : "Search module for n2n",
+	"keywords" : [
+		"n2n-tmpl-module",
+		"n2n-module",
+		"n2n"
+	],
+	"homepage" : "https://n2n.rocks/",
+	"license" : "MIT",
+	"authors" : [{
+			"name" : "Thomas Günther",
+			"email" : "guenther@hnm.ch"
+		}
+	],
+	"require" : {
+		"php" : ">=7.0",
+		"n2n/n2n-composer-module-installer" : "^7.1",
+		"n2n/rocket" : "^2.0.16"
+	},
+	"autoload" : {
+		"psr-4" : {
+			"search\\" : "src/app/search"
+		}
+	}
 }
