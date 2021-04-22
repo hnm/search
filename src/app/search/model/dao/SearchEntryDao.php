@@ -170,4 +170,13 @@ class SearchEntryDao implements RequestScoped {
 	public function getSearchStatByText(string $text) {
 		return $this->em->createSimpleCriteria(SearchStat::getClass(), array('text' => $text))->toQuery()->fetchSingle();
 	}
+	
+	/**
+	 * @return number
+	 */
+	public function getNumSearchEntries() {
+		$criteria = $this->em->createCriteria();
+		$criteria->select('COUNT(se)')->from(SearchEntry::getClass(), 'se');
+		return intval($criteria->toQuery()->fetchSingle());
+	}
 }

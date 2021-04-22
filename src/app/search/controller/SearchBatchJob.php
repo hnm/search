@@ -19,7 +19,8 @@ class SearchBatchJob implements Lookupable {
 	}
 	
 	public function _onNewHour(SearchEntryDao $searchEntryDao) {
-		foreach ($searchEntryDao->getSearchEntriesSortedByDate(3) as $searchEntry) {
+		$count = ceil($searchEntryDao->getNumSearchEntries() / 20);
+		foreach ($searchEntryDao->getSearchEntriesSortedByDate($count) as $searchEntry) {
 			try {
 				if ($this->isStatusOk($this->determineUrl($searchEntry->getUrlStr()))) {
 					$tx = $this->tm->createTransaction();
