@@ -29,7 +29,7 @@ class SearchHtmlBuilder {
 		$this->n2nLocale = $view->getN2nLocale();
 
 		if ($addJQuery) {
-			$this->view->getHtmlBuilder()->meta()->addLibrary(new JQueryLibrary(3));
+			$this->view->getHtmlBuilder()->meta()->addLibrary(new JQueryLibrary(3, $jsTarget));
 		}
 		$this->view->getHtmlBuilder()->meta()->addJs('js/search.js', 'search', false, false, array(), $jsTarget);
 	}
