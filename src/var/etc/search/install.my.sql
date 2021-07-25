@@ -26,14 +26,14 @@ CREATE TABLE IF NOT EXISTS `search_entry` (
   UNIQUE KEY `url_str` (`url_str`),
   FULLTEXT KEY `searchable_text` (`searchable_text`),
   FULLTEXT KEY `keywords_str` (`keywords_str`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Daten Export vom Benutzer nicht ausgewählt
 -- Exportiere Struktur von Tabelle halter.search_group
 CREATE TABLE IF NOT EXISTS `search_group` (
   `key` varchar(255) NOT NULL,
   PRIMARY KEY (`key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Daten Export vom Benutzer nicht ausgewählt
 -- Exportiere Struktur von Tabelle halter.search_group_t
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `search_group_t` (
   `n2n_locale` varchar(12) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `search_group_t_index_1` (`group_key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Daten Export vom Benutzer nicht ausgewählt
 -- Exportiere Struktur von Tabelle halter.search_stat
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `search_stat` (
   `result_amount` varchar(255) DEFAULT NULL,
   `search_amount` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Daten Export vom Benutzer nicht ausgewählt
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
