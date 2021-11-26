@@ -88,7 +88,7 @@ class SearchHtmlBuilder {
 		$request = $this->view->getRequest();
 		$url = $request->getHostUrl()->extR($request->getContextPath());
 
-		$url = $url->ext('search-results')->queryExt(array('nl' => $request->getN2nLocale()));
+		$url = $url->ext('search-results')->queryExt(array('nl' => $this->view->getN2nLocale()));
 
 		if ($groupKeys !== null) {
 			$url = $url->queryExt(array('gk' => StringUtils::jsonEncode($groupKeys)));
