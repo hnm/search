@@ -104,7 +104,7 @@ class Indexer implements RequestScoped {
 	public function add($url, string $title,  N2nLocale $n2nLocale, string $searchableText = null,
 			string $keywordsStr = null, string $lead = null, array $allowedQueryParams = array(), string $groupKey = null) {
 		Url::create($url);
-		$searchEntry = $this->create($searchableText, $url, $n2nLocale, $allowedQueryParams, $groupKey, $title, $lead, $keywordsStr);
+		$searchEntry = $this->create($searchableText, $url, $n2nLocale, $allowedQueryParams, $title, $lead, $keywordsStr);
 		$this->addEntry($searchEntry);
 	}
 
@@ -247,15 +247,15 @@ class Indexer implements RequestScoped {
 		return $allowedQueryParams;
 	}
 
-	private function create($searchableText, $url, $n2nLocale, array $allowedParams = array(), $groupKey = null, $title = null, $lead = null, $keywordsStr = null) {
+	private function create($searchableText, $url, $n2nLocale, array $allowedParams = array(), $title = null, $lead = null, $keywordsStr = null) {
 		$url = Url::create($url);
 		$url = $url->chQuery($this->stripProhibitedParams($url->getQuery()->toArray(), $allowedParams));
 
 		$searchEntry = $this->sed->getSearchEntryByUrl($url);
-
 		if ($searchEntry === null) {
-			$searchEntry = new SearchEntry($searchableText, $url, $n2nLocale, $this->getOrCreateGroupByKey($groupKey), $title, $lead, $keywordsStr);
+			$searchEntry = new SearchEntry($searchableText, $url, $n2nLocale, $title, $lead, $keywordsStr);
 		}
+
 		$searchEntry->setSearchableText($searchableText);
 
 		return $searchEntry;

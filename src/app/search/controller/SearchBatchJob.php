@@ -8,6 +8,7 @@ use n2n\core\N2N;
 use n2n\web\http\Request;
 use n2n\util\ex\IllegalStateException;
 use n2n\core\container\TransactionManager;
+use http\Exception\InvalidArgumentException;
 
 class SearchBatchJob implements Lookupable {
 	private $request;
@@ -22,7 +23,7 @@ class SearchBatchJob implements Lookupable {
 		$count = ceil($searchEntryDao->getNumSearchEntries() / 20);
 		foreach ($searchEntryDao->getSearchEntriesSortedByDate($count) as $searchEntry) {
 			try {
-				if ($this->isStatusOk($this->determineUrl($searchEntry->getUrlStr()))) {
+				if ($this->isStatusOk(Url::create($searchEntry->getUrlStr()))) {
 					$tx = $this->tm->createTransaction();
 					$searchEntry->setLastChecked(new \DateTime());
 					$tx->commit();
@@ -34,16 +35,6 @@ class SearchBatchJob implements Lookupable {
 			$searchEntryDao->removeEntry($searchEntry);
 			$tx->commit();
 		}
-	}
-	
-	private function determineUrl(string $urlStr) {
-		$url = Url::create($urlStr);
-		if (!$url->isRelative()) return $url;
-		if (N2N::isHttpContextAvailable()) {
-			return $this->request->getHostUrl()->ext($url);
-		}
-		
-		throw new IllegalStateException('Search batch job needs http-context');
 	}
 	
 	private function isStatusOk(Url $url) {
