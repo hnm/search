@@ -33,6 +33,10 @@ class SearchBatchJob implements Lookupable {
 	}
 	
 	private function isStatusOk(Url $url) {
+		if ($url->isRelative()) {
+			return false;
+		}
+
 		$headers = get_headers((string) $url);
 		if (false === $headers) return false;
 		
