@@ -4,46 +4,31 @@ namespace search\controller;
 use n2n\context\Lookupable;
 use search\model\dao\SearchEntryDao;
 use n2n\util\uri\Url;
-use n2n\core\N2N;
-use n2n\web\http\Request;
-use n2n\util\ex\IllegalStateException;
 use n2n\core\container\TransactionManager;
 
 class SearchBatchJob implements Lookupable {
-	private $request;
 	private $tm;
-	
-	private function _init(Request $request, TransactionManager $tm) {
-		$this->request = $request;
+
+	private function _init(TransactionManager $tm) {
 		$this->tm = $tm;
 	}
-	
+
 	public function _onNewHour(SearchEntryDao $searchEntryDao) {
 		$count = ceil($searchEntryDao->getNumSearchEntries() / 20);
 		foreach ($searchEntryDao->getSearchEntriesSortedByDate($count) as $searchEntry) {
 			try {
-				if ($this->isStatusOk($this->determineUrl($searchEntry->getUrlStr()))) {
+				if ($this->isStatusOk(Url::create($searchEntry->getUrlStr()))) {
 					$tx = $this->tm->createTransaction();
 					$searchEntry->setLastChecked(new \DateTime());
 					$tx->commit();
 					continue;
 				}
 			} catch (\InvalidArgumentException $e) {}
-			
+
 			$tx = $this->tm->createTransaction();
 			$searchEntryDao->removeEntry($searchEntry);
 			$tx->commit();
 		}
-	}
-	
-	private function determineUrl(string $urlStr) {
-		$url = Url::create($urlStr);
-		if (!$url->isRelative()) return $url;
-		if (N2N::isHttpContextAvailable()) {
-			return $this->request->getHostUrl()->ext($url);
-		}
-		
-		throw new IllegalStateException('Search batch job needs http-context');
 	}
 	
 	private function isStatusOk(Url $url) {
