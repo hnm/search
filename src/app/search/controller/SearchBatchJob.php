@@ -5,6 +5,7 @@ use n2n\context\Lookupable;
 use search\model\dao\SearchEntryDao;
 use n2n\util\uri\Url;
 use n2n\core\container\TransactionManager;
+use http\Exception\InvalidArgumentException;
 
 class SearchBatchJob implements Lookupable {
 	private $tm;

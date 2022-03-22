@@ -6,6 +6,8 @@ use n2n\persistence\orm\annotation\AnnoManyToOne;
 use n2n\reflection\annotation\AnnoInit;
 use n2n\reflection\ObjectAdapter;
 use n2n\persistence\orm\CascadeType;
+use http\Exception\InvalidArgumentException;
+use n2n\util\uri\Url;
 
 /**
  * Class SearchEntry
@@ -73,7 +75,7 @@ class SearchEntry extends ObjectAdapter {
 			string $title = null, string $description = null, string $keywordsStr = null) {
 
         $this->searchableText = $searchableText;
-	    $this->urlStr = $urlStr;
+		$this->setUrlStr($urlStr);
         $this->n2nLocale = $n2nLocale;
 	    $this->title = $title;
 		$this->description = $description;
@@ -163,6 +165,9 @@ class SearchEntry extends ObjectAdapter {
 	 * @param string $urlStr
 	 */
 	public function setUrlStr(string $urlStr) {
+		if (Url::create($urlStr)->isRelative()) {
+			throw new InvalidArgumentException('urlStr must not be relative.');
+		}
 		$this->urlStr = $urlStr;
 	}
 
