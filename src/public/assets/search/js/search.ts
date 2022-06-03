@@ -21,7 +21,7 @@
             for (var i = 0; i < this.inputJqs.length; i++) {
                 var inputJq = $(this.inputJqs[i]);
     
-                inputJq.keyup(function(e) {
+                inputJq.on('keyup change', (function(e) {
                 	var value = <string> $(this).val();
                     if (value.length <= 2) {
                         that.entryList.hide();
@@ -46,7 +46,7 @@
                 });
             };
     
-            $("body").keyup(function(e) {
+            $("body").on('keyup change', function(e) {
                 if (e.keyCode == 27) {
                     that.entryList.hide();
                 }
