@@ -224,7 +224,7 @@ class Indexer implements RequestScoped {
 			}
 
 			if ($enabled) {
-				$searchableText .= trim($htmlTag->getText()) . ' ';
+				$searchableText .= trim($htmlTag->getText() ?? '') . ' ';
 			}
 		}
 

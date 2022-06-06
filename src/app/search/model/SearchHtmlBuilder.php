@@ -224,7 +224,7 @@ class SearchHtmlBuilder {
 		$foundParts = [];
 		$checkNextWord = true;
 		
-		foreach (explode(' ', trim($searchEntry->getSearchableText())) as $word) {
+		foreach (explode(' ', trim($searchEntry->getSearchableText()) ?? '') as $word) {
 			if (empty($word)) {
 				if (!empty($foundParts)) {
 					break;
@@ -235,7 +235,7 @@ class SearchHtmlBuilder {
 			
 			if (empty($foundParts) || $checkNextWord) {
 				$checkNextWord = false;
-				foreach (explode(' ', trim($highlight)) as $needleWord) {
+				foreach (explode(' ', trim($highlight ?? '')) as $needleWord) {
 					if (empty($needleWord) || mb_strpos(strtolower($word), strtolower($needleWord)) === false) continue;
 					$foundParts[] = $word;
 					$checkNextWord = true;
@@ -275,10 +275,10 @@ class SearchHtmlBuilder {
 	public static function highlight($needle, $text) {
 		$highlightedText = '';
 
-		foreach (explode(' ', trim($text)) as $word) {
+		foreach (explode(' ', trim($text ?? '')) as $word) {
 			$replaced = false;
 
-			foreach (explode(' ', trim($needle)) as $needleWord) {
+			foreach (explode(' ', trim($needle ?? '')) as $needleWord) {
 				if ($needleWord === '') continue;
 				$position = strpos(strtolower($word), strtolower($needleWord));
 				if ($position > -1) {

@@ -16,7 +16,7 @@ class HtmlTagAttribute {
     public static function create($args) {
         $argsArr = explode('=', $args);
 
-        return new HtmlTagAttribute(array_shift($argsArr), trim(array_shift($argsArr), '"'));
+        return new HtmlTagAttribute(array_shift($argsArr), trim(array_shift($argsArr) ?? '', '"'));
     }
 
     /**
