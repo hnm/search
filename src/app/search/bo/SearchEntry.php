@@ -164,7 +164,12 @@ class SearchEntry extends ObjectAdapter {
 	/**
 	 * @param string $urlStr
 	 */
-	public function setUrlStr(string $urlStr) {
+	public function setUrlStr(string $urlStr = null) {
+		if ($urlStr === null) {
+			$this->urlStr = null;
+			return;
+		}
+		
 		if (Url::create($urlStr)->isRelative()) {
 			throw new InvalidArgumentException('urlStr must not be relative.');
 		}
