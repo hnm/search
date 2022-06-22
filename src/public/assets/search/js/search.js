@@ -36,7 +36,7 @@
             }
             ;
             $("body").on('keyup change', function (e) {
-                if (e.keyCode == 27) {
+                if (e.keyCode == 27 && that.entryList.isHideOnEsc()) {
                     that.entryList.hide();
                 }
             });
@@ -109,7 +109,11 @@
             this.callbacks = {};
             this.visible = false;
             this.fallbackDiv = null;
+            this.hideOnEsc = true;
             this.elemJq = elemJq;
+            if (this.elemJq.data("hideOnEsc") === false) {
+                this.hideOnEsc = false;
+            }
             this.resultListJq = this.elemJq.find(".search-result-list");
             this.hideJq = $(this.elemJq.data("jqSearchHideSelector"));
             this.hide();
@@ -183,6 +187,9 @@
         };
         EntryList.prototype.getElemJq = function () {
             return this.elemJq;
+        };
+        EntryList.prototype.isHideOnEsc = function () {
+            return this.hideOnEsc;
         };
         return EntryList;
     }());
