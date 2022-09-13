@@ -283,13 +283,13 @@ class Indexer implements RequestScoped {
 
 		$title = null;
 		if ($autoTitle) {
-			$title = htmlspecialchars_decode($htmlScan->getTitle() || '');
+			$title = htmlspecialchars_decode($htmlScan->getTitle() ?? '');
 		}
 		$searchEntry->setTitle($title);
 
 		$desc = null;
 		if ($autoDescription) {
-			$desc = htmlspecialchars_decode($htmlScan->getDescription() || '');
+			$desc = htmlspecialchars_decode($htmlScan->getDescription() ?? '');
 		}
 		$searchEntry->setDescription($desc);
 
