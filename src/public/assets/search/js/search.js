@@ -42,8 +42,10 @@
             });
         }
         Search.prototype.search = function (searchStr) {
-            if (searchStr === this.lastSearch)
+            if (searchStr === this.lastSearch) {
+                this.entryList.show();
                 return;
+            }
             this.lastSearch = searchStr;
             if (searchStr) {
                 clearTimeout(this.statTimeout);

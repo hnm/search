@@ -53,7 +53,10 @@
 		}
 
 		public search(searchStr: string) {
-			if (searchStr === this.lastSearch) return;
+			if (searchStr === this.lastSearch) {
+				this.entryList.show();
+				return;
+			}
 
 			this.lastSearch = searchStr;
 
