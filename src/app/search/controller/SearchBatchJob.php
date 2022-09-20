@@ -37,7 +37,7 @@ class SearchBatchJob implements Lookupable {
 			return false;
 		}
 
-		$headers = get_headers((string) $url);
+		$headers = @get_headers((string) $url);
 		if (false === $headers) return false;
 		
 		return substr($headers[0], 9, 3) === '200';
