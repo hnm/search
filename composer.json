@@ -9,7 +9,8 @@
 	],
 	"homepage" : "https://n2n.rocks/",
 	"license" : "MIT",
-	"authors" : [{
+	"authors" : [
+        {
 			"name" : "Thomas Günther",
 			"email" : "guenther@hnm.ch"
 		}
