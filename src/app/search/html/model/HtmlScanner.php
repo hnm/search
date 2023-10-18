@@ -6,175 +6,152 @@ use search\html\bo\HtmlTag;
 use n2n\util\StringUtils;
 use n2n\util\type\CastUtils;
 
-/**
- * Class HtmlScanner
- * This class is able to scan through HTML-code and read searchable text.
- * @package html\model
- */
 class HtmlScanner {
 	const SELF_CLOSING_HTML_TAGS = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
 	const EXCLUDE_HTML_TAGS = ['script'];
 
-	/**
-	 * Easy way to create a HtmlScan by htmlStr
-	 * @param string $htmlStr
-	 */
-	public static function scan(string $htmlStr) {
+	public static function scan(string $htmlStr): HtmlScan {
 		$htmlScan = new HtmlScan();
 		$curLvl = 0;
 		$inStrChar = '';
 		$escaped = false;
-		$htmlTags = array();
-		$htmlTagLvls = array();
+		$htmlTags = [];
+		$htmlTagLvls = [];
 		$htmlTagDefinitionStr = '';
 		$inHtmlTagDefinition = false;
 		$currentHtmlTagRawText = '';
+
+		$htmlStr = preg_replace('/<!--.*?-->/', '', $htmlStr);
+		$htmlStr = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $htmlStr);
+		$htmlStr = preg_replace('/<noscript\b[^>]*>(.*?)<\/noscript>/is', "", $htmlStr);
+		$htmlStr = preg_replace('/<style\b[^>]*>(.*?)<\/style>/is', "", $htmlStr);
+
 		foreach (str_split($htmlStr) as $char) {
 			$escaped = self::determineEscaped($char, $escaped);
-			$inStrChar = self::determineInStrChar($escaped, $char, $inStrChar, $inHtmlTagDefinition, end($htmlTags));
-
-			if ($char === '<' && !$inStrChar && !$escaped) {
-				if (!$inHtmlTagDefinition) {
-					if (isset($htmlTagLvls[$curLvl - 1])) {
-						$tag = end($htmlTagLvls[$curLvl - 1]);
-						CastUtils::assertTrue($tag instanceof HtmlTag);
-						if (!in_array($tag->getName(), self::EXCLUDE_HTML_TAGS)) {
-							$tag->addText(html_entity_decode($currentHtmlTagRawText));
-						}
-						$currentHtmlTagRawText = '';
-					}
-				}
-
-				$inHtmlTagDefinition = true;
-			}
-
-			if ($char === '>' && $inHtmlTagDefinition && !$escaped && !$inStrChar) {
-
-				$htmlTagDefinitionStr .= $char;
-				if (StringUtils::startsWith('</', $htmlTagDefinitionStr)) {
-					$curLvl--;
-				} elseif (!StringUtils::startsWith('<!', $htmlTagDefinitionStr)) {
-					$htmlTag = HtmlTag::create($htmlTagDefinitionStr);
-
-					$htmlTagLvls[$curLvl][] = $htmlTag;
-					$htmlTags[] = $htmlTag;
-
-					if (isset($htmlTagLvls[$curLvl - 1])) {
-						$parentHtmlTag = end($htmlTagLvls[$curLvl - 1]);
-						$htmlTag->setParentHtmlTag($parentHtmlTag);
-						$parentHtmlTag->addChildHtmlTag($htmlTag);
-					}
-
-					if (!in_array($htmlTag->getName(), self::SELF_CLOSING_HTML_TAGS)) {
-						$curLvl++;
-					}
-				}
-
-				$inHtmlTagDefinition = false;
-				$htmlTagDefinitionStr = '';
-				continue;
-			}
-
-			if ($inHtmlTagDefinition) {
-				$htmlTagDefinitionStr .= $char;
-				continue;
-			}
-
-			if (!$inHtmlTagDefinition) {
-				$currentHtmlTagRawText .= $char;
-			}
+			$inStrChar = self::determineInStrChar($escaped, $char, $inStrChar, $inHtmlTagDefinition, end($htmlTags) === false ? null : end($htmlTags));
+			self::processChar($char, $curLvl, $inStrChar, $escaped, $htmlTagLvls, $htmlTagDefinitionStr, $inHtmlTagDefinition, $htmlTags, $currentHtmlTagRawText, $htmlScan);
 		}
 
 		$htmlScan->setHtmlTags($htmlTags);
-
 		self::determineMeta($htmlScan);
 		return $htmlScan;
 	}
 
-	/**
-	 * Determines if a character is escaped
-	 * @param $char
-	 * @param $escaped
-	 * @return bool
-	 */
-	private static function determineEscaped($char, $escaped) {
-		if ($char === '\\') {
-			if ($escaped) {
-				$escaped = false;
-			} else {
-				$escaped = true;
-			}
-		} else {
-			$escaped = false;
-		}
-
-		return $escaped;
+	private static function determineEscaped(string $char, bool $escaped): bool {
+		return $char === '\\' ? !$escaped : false;
 	}
 
-	/**
-	 * determines if a character is in quotes
-	 * @param $escaped
-	 * @param $char
-	 * @param $inStrChar
-	 * @return string
-	 */
-	private static function determineInStrChar($escaped, $char, $inStrChar, $inHtmlTagDefinition, $lastHtmlTag) {
+	private static function determineInStrChar(bool $escaped, string $char, string $inStrChar, bool $inHtmlTagDefinition, ?HtmlTag $lastHtmlTag): string {
 		if ($inHtmlTagDefinition || !$lastHtmlTag || $lastHtmlTag->getName() !== 'script') {
 			return $inStrChar;
 		}
 
-		if (!$escaped && $char === "'" || $char === '"') {
-
-			if ($inStrChar === '') {
-				return $char;
-			} elseif ($inStrChar === $char) {
-				return '';
-			}
+		if (!$escaped && ($char === "'" || $char === '"')) {
+			return $inStrChar === '' ? $char : ($inStrChar === $char ? '' : $inStrChar);
 		}
 
 		return $inStrChar;
 	}
 
-	/**
-	 * Determines the name, keywords and description by html-meta tags
-	 * @param HtmlScan $htmlScan
-	 */
+	private static function processChar(string $char, int &$curLvl, string $inStrChar, bool $escaped, array &$htmlTagLvls, string &$htmlTagDefinitionStr, bool &$inHtmlTagDefinition, array &$htmlTags, string &$currentHtmlTagRawText, HtmlScan $htmlScan) {
+		if ($char === '<' && !$inStrChar && !$escaped) {
+			if ($inHtmlTagDefinition === false) {
+				self::processTagText($curLvl, $htmlTagLvls, $currentHtmlTagRawText);
+				$currentHtmlTagRawText = '';
+			}
+			$inHtmlTagDefinition = true;
+		}
+
+		if ($char === '>' && $inHtmlTagDefinition && !$escaped && !$inStrChar) {
+			self::processTagEnd($char, $curLvl, $htmlTagDefinitionStr, $htmlTagLvls, $htmlTags, $inHtmlTagDefinition);
+			$htmlTagDefinitionStr = '';
+		}
+
+		if ($inHtmlTagDefinition) {
+			$htmlTagDefinitionStr .= $char;
+		} else {
+			$currentHtmlTagRawText .= $char;
+		}
+	}
+
+	private static function processTagText(int $curLvl, array $htmlTagLvls, string $currentHtmlTagRawText) {
+		if (isset($htmlTagLvls[$curLvl - 1])) {
+			$tag = end($htmlTagLvls[$curLvl - 1]);
+			CastUtils::assertTrue($tag instanceof HtmlTag);
+
+			$cleanedText = ltrim($currentHtmlTagRawText, '>');
+
+			if (!in_array($tag->getName(), self::EXCLUDE_HTML_TAGS)) {
+				$tag->addText(html_entity_decode($cleanedText));
+			}
+		}
+	}
+
+
+	private static function processTagEnd(string $char, int &$curLvl, string &$htmlTagDefinitionStr, array &$htmlTagLvls, array &$htmlTags, bool &$inHtmlTagDefinition) {
+		$htmlTagDefinitionStr .= $char;
+
+		if (StringUtils::startsWith('</', $htmlTagDefinitionStr)) {
+			$curLvl--;
+		} elseif (!StringUtils::startsWith('<!', $htmlTagDefinitionStr)) {
+			$htmlTag = HtmlTag::create($htmlTagDefinitionStr);
+
+			$htmlTagLvls[$curLvl][] = $htmlTag;
+			$htmlTags[] = $htmlTag;
+			self::linkWithParent($htmlTag, $htmlTagLvls, $curLvl);
+
+			if (!in_array($htmlTag->getName(), self::SELF_CLOSING_HTML_TAGS)) {
+				$curLvl++;
+			}
+		}
+
+		$inHtmlTagDefinition = false;
+	}
+
+	private static function linkWithParent(HtmlTag $htmlTag, array &$htmlTagLvls, int $curLvl) {
+		if (isset($htmlTagLvls[$curLvl - 1])) {
+			$parentHtmlTag = end($htmlTagLvls[$curLvl - 1]);
+			$htmlTag->setParentHtmlTag($parentHtmlTag);
+			$parentHtmlTag->addChildHtmlTag($htmlTag);
+		}
+	}
+
 	private static function determineMeta(HtmlScan $htmlScan) {
 		foreach ($htmlScan->getHtmlTags() as $htmlTag) {
-			if ($htmlTag->getName() === 'head') {
-				foreach ($htmlTag->getChildHtmlTags() as $headerHtmlTag) {
-					if ($headerHtmlTag->getName() === 'title') {
-						$htmlScan->setTitle($headerHtmlTag->getText());
-					}
-				}
+			if ($htmlTag->getName() === 'title') {
+				$htmlScan->setTitle($htmlTag->getText());
 			}
 
 			if ($htmlTag->getName() === 'meta') {
-				$type = null;
-
-				foreach ($htmlTag->getAttributes() as $attribute) {
-					if ($attribute->getValue() === 'keywords') {
-						$type = 'keywords';
-					}
-
-					if ($attribute->getValue() === 'description') {
-						$type = 'description';
-					}
-
-					$value = null;
-					if ($attribute->getName() === 'content') {
-						$value = $attribute->getValue();
-					}
-				}
-
-				if ($type === 'keywords') {
-					$htmlScan->setKeywordsStr($value);
-				}
-
-				if ($type === 'description') {
-					$htmlScan->setDescription($value);
-				}
+				self::processMetaTag($htmlTag, $htmlScan);
 			}
+		}
+	}
+
+	private static function processMetaTag(HtmlTag $htmlTag, HtmlScan $htmlScan) {
+		$type = null;
+		$value = null;
+
+		foreach ($htmlTag->getAttributes() as $attribute) {
+			if ($attribute->getValue() === 'keywords') {
+				$type = 'keywords';
+			}
+
+			if ($attribute->getValue() === 'description') {
+				$type = 'description';
+			}
+
+			if ($attribute->getName() === 'content') {
+				$value = $attribute->getValue();
+			}
+		}
+
+		if ($type === 'keywords') {
+			$htmlScan->setKeywordsStr($value);
+		}
+
+		if ($type === 'description') {
+			$htmlScan->setDescription($value);
 		}
 	}
 }
