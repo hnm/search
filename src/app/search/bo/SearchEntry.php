@@ -6,7 +6,7 @@ use n2n\persistence\orm\annotation\AnnoManyToOne;
 use n2n\reflection\annotation\AnnoInit;
 use n2n\reflection\ObjectAdapter;
 use n2n\persistence\orm\CascadeType;
-use http\Exception\InvalidArgumentException;
+use InvalidArgumentException;
 use n2n\util\uri\Url;
 
 /**
