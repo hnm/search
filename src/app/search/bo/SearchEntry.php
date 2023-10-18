@@ -34,9 +34,9 @@ class SearchEntry extends ObjectAdapter {
 	 */
 	private $description;
 
-    /**
-     * @var string
-     */
+	/**
+	 * @var string
+	 */
 	private $searchableText;
 
 	/**
@@ -49,9 +49,6 @@ class SearchEntry extends ObjectAdapter {
 	 */
 	private $urlStr;
 
-	/**
-	 * @var string
-	 */
 	private $group;
 
 	/**
@@ -74,10 +71,10 @@ class SearchEntry extends ObjectAdapter {
 	public function __construct(string $searchableText = null, string $urlStr = null, N2nLocale $n2nLocale = null,
 			string $title = null, string $description = null, string $keywordsStr = null) {
 
-        $this->searchableText = $searchableText;
+		$this->searchableText = $searchableText;
 		$this->setUrlStr($urlStr);
-        $this->n2nLocale = $n2nLocale;
-	    $this->title = $title;
+		$this->n2nLocale = $n2nLocale;
+		$this->title = $title;
 		$this->description = $description;
 		$this->keywordsStr = $keywordsStr;
 		$this->lastChecked = new \DateTime();
@@ -140,19 +137,20 @@ class SearchEntry extends ObjectAdapter {
 		$this->keywordsStr = $keywordsStr;
 	}
 
-    /**
-     * @return string
-     */
-    public function getSearchableText() {
-        return $this->searchableText;
-    }
+	/**
+	 * @return string
+	 */
+	public function getSearchableText() {
+		return $this->searchableText;
+	}
 
-    /**
-     * @param string $searchableText
-     */
-    public function setSearchableText($searchableText = null) {
-        $this->searchableText = $searchableText;
-    }
+	/**
+	 * @param string $searchableText
+	 */
+	public function setSearchableText($searchableText = null) {
+		$searchableText = preg_replace('/\s+/', ' ', $searchableText);
+		$this->searchableText = $searchableText;
+	}
 
 	/**
 	 * @return string
@@ -169,7 +167,7 @@ class SearchEntry extends ObjectAdapter {
 			$this->urlStr = null;
 			return;
 		}
-		
+
 		if (Url::create($urlStr)->isRelative()) {
 			throw new InvalidArgumentException('urlStr must not be relative.');
 		}
