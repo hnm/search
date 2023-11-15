@@ -103,7 +103,7 @@ class SearchEntry extends ObjectAdapter {
 	}
 
 	/**
-	 * @param string $title
+	 * @param string|null $title
 	 */
 	public function setTitle(string $title = null) {
 		$this->title = $title;
