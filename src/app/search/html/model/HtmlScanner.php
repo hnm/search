@@ -5,10 +5,13 @@ use search\html\bo\HtmlScan;
 use search\html\bo\HtmlTag;
 use n2n\util\StringUtils;
 use n2n\util\type\CastUtils;
+use search\model\Indexer;
 
 class HtmlScanner {
 	const SELF_CLOSING_HTML_TAGS = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
 	const EXCLUDE_HTML_TAGS = ['script'];
+
+	private static array $tagStack = [];
 
 	public static function scan(string $htmlStr): HtmlScan {
 		$htmlScan = new HtmlScan();
@@ -21,6 +24,7 @@ class HtmlScanner {
 		$inHtmlTagDefinition = false;
 		$currentHtmlTagRawText = '';
 
+		// Pre-process the HTML string to remove comments and certain tags
 		$htmlStr = preg_replace('/<!--.*?-->/', '', $htmlStr);
 		$htmlStr = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $htmlStr);
 		$htmlStr = preg_replace('/<noscript\b[^>]*>(.*?)<\/noscript>/is', "", $htmlStr);
@@ -91,30 +95,72 @@ class HtmlScanner {
 	private static function processTagEnd(string $char, int &$curLvl, string &$htmlTagDefinitionStr, array &$htmlTagLvls, array &$htmlTags, bool &$inHtmlTagDefinition) {
 		$htmlTagDefinitionStr .= $char;
 
-		if (StringUtils::startsWith('</', $htmlTagDefinitionStr)) {
-			$curLvl--;
-		} elseif (!StringUtils::startsWith('<!', $htmlTagDefinitionStr)) {
-			$htmlTag = HtmlTag::create($htmlTagDefinitionStr);
+		if (StringUtils::startsWith('<', $htmlTagDefinitionStr) && !StringUtils::startsWith('</', $htmlTagDefinitionStr)) {
+			$tagType = self::getTagType($htmlTagDefinitionStr);
+			array_push(self::$tagStack, ['type' => $tagType, 'level' => $curLvl]);
+		}
 
-			$htmlTagLvls[$curLvl][] = $htmlTag;
-			$htmlTags[] = $htmlTag;
-			self::linkWithParent($htmlTag, $htmlTagLvls, $curLvl);
+		if (self::shouldProcessTag($curLvl, $htmlTagDefinitionStr)) {
+			if (!StringUtils::startsWith('<!', $htmlTagDefinitionStr)) {
+				$htmlTag = HtmlTag::create($htmlTagDefinitionStr);
 
-			if (!in_array($htmlTag->getName(), self::SELF_CLOSING_HTML_TAGS)) {
-				$curLvl++;
+				$htmlTagLvls[$curLvl][] = $htmlTag;
+				$htmlTags[] = $htmlTag;
+
+				if (!in_array($htmlTag->getName(), self::SELF_CLOSING_HTML_TAGS)) {
+					$curLvl++;
+				}
 			}
+		}
+
+		if (StringUtils::startsWith('</', $htmlTagDefinitionStr)) {
+			self::popTagStack($curLvl);
+			$curLvl--;
 		}
 
 		$inHtmlTagDefinition = false;
 	}
 
-	private static function linkWithParent(HtmlTag $htmlTag, array &$htmlTagLvls, int $curLvl) {
-		if (isset($htmlTagLvls[$curLvl - 1])) {
-			$parentHtmlTag = end($htmlTagLvls[$curLvl - 1]);
-			$htmlTag->setParentHtmlTag($parentHtmlTag);
-			$parentHtmlTag->addChildHtmlTag($htmlTag);
+	private static function shouldProcessTag(int $curLvl, string $htmlTagDefinitionStr): bool {
+		if (self::isTagIncluded($htmlTagDefinitionStr)) {
+			return true;
+		}
+		if (self::isTagExcluded($htmlTagDefinitionStr)) {
+			return false;
+		}
+
+		// Check the tag stack for nested include/exclude logic
+		foreach (array_reverse(self::$tagStack) as $tag) {
+			if ($tag['level'] < $curLvl) {
+				break;
+			}
+			if ($tag['type'] === 'included') {
+				return true;
+			}
+			if ($tag['type'] === 'excluded') {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private static function popTagStack(int $curLvl) {
+		while (!empty(self::$tagStack) && end(self::$tagStack)['level'] >= $curLvl) {
+			array_pop(self::$tagStack);
 		}
 	}
+
+	private static function getTagType(string $htmlTagDefinition): string {
+		if (self::isTagIncluded($htmlTagDefinition)) {
+			return 'included';
+		}
+		if (self::isTagExcluded($htmlTagDefinition)) {
+			return 'excluded';
+		}
+		return 'normal';
+	}
+
 
 	private static function determineMeta(HtmlScan $htmlScan) {
 		foreach ($htmlScan->getHtmlTags() as $htmlTag) {
@@ -153,5 +199,16 @@ class HtmlScanner {
 		if ($type === 'description') {
 			$htmlScan->setDescription($value);
 		}
+	}
+
+
+	private static function isTagExcluded(string $htmlTagDefinition): bool {
+		$pattern = '/data-search\s*=\s*"' . Indexer::SEARCH_EXCLUDE . '"/';
+		return preg_match($pattern, $htmlTagDefinition) === 1;
+	}
+
+	private static function isTagIncluded(string $htmlTagDefinition): bool {
+		$pattern = '/data-search\s*=\s*"' . Indexer::SEARCH_INCLUDED . '"/';
+		return preg_match($pattern, $htmlTagDefinition) === 1;
 	}
 }

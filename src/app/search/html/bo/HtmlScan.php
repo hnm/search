@@ -28,7 +28,7 @@ class HtmlScan {
     /**
      * @var string
      */
-    private $searchableStr;
+    private string $searchableStr;
 
     /**
      * @return array
