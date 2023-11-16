@@ -8,6 +8,7 @@ use n2n\util\uri\Url;
 use search\bo\SearchEntry;
 use search\bo\SearchGroup;
 use search\bo\SearchStat;
+use n2n\persistence\orm\query\QueryConflictException;
 
 /**
  * Class SearchEntryDao
@@ -86,9 +87,9 @@ class SearchEntryDao implements RequestScoped {
 	}
 
 	/**
-	 * @param string $urlStr
-	 * @param N2nLocale $n2nLocale
+	 * @param Url $url
 	 * @return SearchEntry
+	 * @throws QueryConflictException
 	 */
 	public function getSearchEntryByUrl(Url $url) {
 		return $this->em->createSimpleCriteria(SearchEntry::getClass(), array('urlStr' => (string) $url))->toQuery()->fetchSingle();
@@ -100,6 +101,7 @@ class SearchEntryDao implements RequestScoped {
 	 * @param string $searchStr
 	 * @param N2nLocale $n2nLocale
 	 * @param string[] groupKeys
+	 * @return array|false
 	 */
 	public function findSearchEntriesBySearchStr(string $searchStr, N2nLocale $n2nLocale, array $groupKeys = null) {
 		if ($searchStr === '') return array();
@@ -109,7 +111,6 @@ class SearchEntryDao implements RequestScoped {
 		if ($groupKeys !== null) {
 			$groupKeyAnd = 'AND (';
 
-			$lastGroupKeyAnd = end($groupKeys);
 			$i = 0;
 			foreach ($groupKeys as $groupKey) {
 				$params[':groupKey' . $i] = $groupKey;

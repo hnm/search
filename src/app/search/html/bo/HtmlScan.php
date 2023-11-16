@@ -76,7 +76,7 @@ class HtmlScan {
      * @return string
      */
     public function getSearchableStr() {
-        return $this->searchableStr;
+        return $this->searchableStr ?? '';
     }
 
     /**

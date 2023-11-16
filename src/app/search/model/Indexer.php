@@ -99,7 +99,6 @@ class Indexer implements RequestScoped {
 	 * @param string|null $keywordsStr
 	 * @param string|null $lead
 	 * @param N2nLocale $n2nLocale
-	 * @return SearchEntry
 	 */
 	public function add($url, string $title,  N2nLocale $n2nLocale, string $searchableText = null,
 			string $keywordsStr = null, string $lead = null, array $allowedQueryParams = array(), string $groupKey = null) {
@@ -181,7 +180,7 @@ class Indexer implements RequestScoped {
 
 	/**
 	 * Deletes all {@link SearchEntry SearchEntries} that belong to one o the groups.
-	 * @param string[] $groupsf
+	 * @param string[] $groups
 	 */
 	public function truncateByGroups(array $groups) {
 		$tx = $this->tm->createTransaction();

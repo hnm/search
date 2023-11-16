@@ -9,6 +9,8 @@ use n2n\web\http\PageNotFoundException;
 use search\bo\SearchStat;
 use search\model\dao\SearchEntryDao;
 use search\model\SearchHtmlBuilder;
+use n2n\util\JsonDecodeFailedException;
+
 /**
  * Class SearchController
  * This Controller is registered by default with the url extension search-results.
@@ -33,6 +35,7 @@ class SearchController extends ControllerAdapter {
 	 * @param ParamGet $gk short for groupKey
 	 * @param ParamGet $stat determines if this search must be in statistics
 	 * @param ParamGet $as short for append searchstring (to url)
+	 * @throws JsonDecodeFailedException
 	 */
 	public function index(ParamGet $ss = null, ParamGet $nl = null, ParamGet $gk = null, ParamGet $stat = null, ParamGet $as = null) {
 		if ($ss === null || $nl === null) {

@@ -6,15 +6,16 @@ use search\html\bo\HtmlTag;
 use n2n\util\StringUtils;
 use n2n\util\type\CastUtils;
 use search\model\Indexer;
+use n2n\web\http\controller\impl\ValResult;
 
 class HtmlScanner {
 	const SELF_CLOSING_HTML_TAGS = ['area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
 	const EXCLUDE_HTML_TAGS = ['script'];
-
-	private static array $tagStack = [];
+	private static ?int $excludedLvl = null;
 
 	public static function scan(string $htmlStr): HtmlScan {
 		$htmlScan = new HtmlScan();
+		self::$excludedLvl = null;
 		$curLvl = 0;
 		$inStrChar = '';
 		$escaped = false;
@@ -37,12 +38,12 @@ class HtmlScanner {
 		}
 
 		$htmlScan->setHtmlTags($htmlTags);
-		self::determineMeta($htmlScan);
+
 		return $htmlScan;
 	}
 
 	private static function determineEscaped(string $char, bool $escaped): bool {
-		return $char === '\\' ? !$escaped : false;
+		return $char === '\\' && !$escaped;
 	}
 
 	private static function determineInStrChar(bool $escaped, string $char, string $inStrChar, bool $inHtmlTagDefinition, ?HtmlTag $lastHtmlTag): string {
@@ -60,14 +61,14 @@ class HtmlScanner {
 	private static function processChar(string $char, int &$curLvl, string $inStrChar, bool $escaped, array &$htmlTagLvls, string &$htmlTagDefinitionStr, bool &$inHtmlTagDefinition, array &$htmlTags, string &$currentHtmlTagRawText, HtmlScan $htmlScan) {
 		if ($char === '<' && !$inStrChar && !$escaped) {
 			if ($inHtmlTagDefinition === false) {
-				self::processTagText($curLvl, $htmlTagLvls, $currentHtmlTagRawText);
+				self::processTagText($curLvl, $htmlTagLvls, $currentHtmlTagRawText, $htmlScan);
 				$currentHtmlTagRawText = '';
 			}
 			$inHtmlTagDefinition = true;
 		}
 
 		if ($char === '>' && $inHtmlTagDefinition && !$escaped && !$inStrChar) {
-			self::processTagEnd($char, $curLvl, $htmlTagDefinitionStr, $htmlTagLvls, $htmlTags, $inHtmlTagDefinition);
+			self::processTagEnd($char, $curLvl, $htmlTagDefinitionStr, $htmlTagLvls, $htmlTags, $inHtmlTagDefinition, $htmlScan);
 			$htmlTagDefinitionStr = '';
 		}
 
@@ -78,32 +79,34 @@ class HtmlScanner {
 		}
 	}
 
-	private static function processTagText(int $curLvl, array $htmlTagLvls, string $currentHtmlTagRawText) {
+	private static function processTagText(int $curLvl, array $htmlTagLvls, string $currentHtmlTagRawText, HtmlScan $htmlScan) {
 		if (isset($htmlTagLvls[$curLvl - 1])) {
 			$tag = end($htmlTagLvls[$curLvl - 1]);
 			CastUtils::assertTrue($tag instanceof HtmlTag);
 
-			$cleanedText = ltrim($currentHtmlTagRawText, '>');
-
+			$cleanedText = ltrim($currentHtmlTagRawText, '>');;
 			if (!in_array($tag->getName(), self::EXCLUDE_HTML_TAGS)) {
-				$tag->addText(html_entity_decode($cleanedText));
+				$tag->addText(html_entity_decode(trim($cleanedText)));
+				if (self::$excludedLvl === null) {
+					$htmlScan->setSearchableStr(trim($htmlScan->getSearchableStr() . ' ' . trim($cleanedText)));
+				}
 			}
 		}
 	}
 
 
-	private static function processTagEnd(string $char, int &$curLvl, string &$htmlTagDefinitionStr, array &$htmlTagLvls, array &$htmlTags, bool &$inHtmlTagDefinition) {
+	private static function processTagEnd(string $char, int &$curLvl, string &$htmlTagDefinitionStr, array &$htmlTagLvls, array &$htmlTags, bool &$inHtmlTagDefinition, HtmlScan $htmlScan) {
 		$htmlTagDefinitionStr .= $char;
 
-		if (StringUtils::startsWith('<', $htmlTagDefinitionStr) && !StringUtils::startsWith('</', $htmlTagDefinitionStr)) {
-			$tagType = self::getTagType($htmlTagDefinitionStr);
-			array_push(self::$tagStack, ['type' => $tagType, 'level' => $curLvl]);
-		}
+		$isTagOpening = StringUtils::startsWith('<', $htmlTagDefinitionStr) && !StringUtils::startsWith('</', $htmlTagDefinitionStr);
+		$isTagClosing = StringUtils::startsWith('</', $htmlTagDefinitionStr);
 
-		if (self::shouldProcessTag($curLvl, $htmlTagDefinitionStr)) {
-			if (!StringUtils::startsWith('<!', $htmlTagDefinitionStr)) {
+		if (self::$excludedLvl === null) {
+			if (!$isTagClosing) {
 				$htmlTag = HtmlTag::create($htmlTagDefinitionStr);
-
+				if ($htmlTag->getName() === 'meta') {
+					self::processMetaTag($htmlTag, $htmlScan);
+				}
 				$htmlTagLvls[$curLvl][] = $htmlTag;
 				$htmlTags[] = $htmlTag;
 
@@ -113,65 +116,29 @@ class HtmlScanner {
 			}
 		}
 
-		if (StringUtils::startsWith('</', $htmlTagDefinitionStr)) {
-			self::popTagStack($curLvl);
+		if ($isTagOpening && self::isTagExcluded($htmlTagDefinitionStr) && self::$excludedLvl === null) {
+			self::$excludedLvl = $curLvl;
+		}
+
+		if ($isTagOpening && self::isTagIncluded($htmlTagDefinitionStr) && self::$excludedLvl !== null) {
+			self::$excludedLvl = null;
+		}
+
+		if ($isTagClosing) {
 			$curLvl--;
+			if ($curLvl === self::$excludedLvl) {
+				self::$excludedLvl = null;
+			}
+
+			if (self::$excludedLvl === null) {
+				$lastTag = end($htmlTags);
+				if ($lastTag !== false && $lastTag->getName() === 'title') {
+					$htmlScan->setTitle(end($htmlTags)->getText());
+				}
+			}
 		}
 
 		$inHtmlTagDefinition = false;
-	}
-
-	private static function shouldProcessTag(int $curLvl, string $htmlTagDefinitionStr): bool {
-		if (self::isTagIncluded($htmlTagDefinitionStr)) {
-			return true;
-		}
-		if (self::isTagExcluded($htmlTagDefinitionStr)) {
-			return false;
-		}
-
-		// Check the tag stack for nested include/exclude logic
-		foreach (array_reverse(self::$tagStack) as $tag) {
-			if ($tag['level'] < $curLvl) {
-				break;
-			}
-			if ($tag['type'] === 'included') {
-				return true;
-			}
-			if ($tag['type'] === 'excluded') {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	private static function popTagStack(int $curLvl) {
-		while (!empty(self::$tagStack) && end(self::$tagStack)['level'] >= $curLvl) {
-			array_pop(self::$tagStack);
-		}
-	}
-
-	private static function getTagType(string $htmlTagDefinition): string {
-		if (self::isTagIncluded($htmlTagDefinition)) {
-			return 'included';
-		}
-		if (self::isTagExcluded($htmlTagDefinition)) {
-			return 'excluded';
-		}
-		return 'normal';
-	}
-
-
-	private static function determineMeta(HtmlScan $htmlScan) {
-		foreach ($htmlScan->getHtmlTags() as $htmlTag) {
-			if ($htmlTag->getName() === 'title') {
-				$htmlScan->setTitle($htmlTag->getText());
-			}
-
-			if ($htmlTag->getName() === 'meta') {
-				self::processMetaTag($htmlTag, $htmlScan);
-			}
-		}
 	}
 
 	private static function processMetaTag(HtmlTag $htmlTag, HtmlScan $htmlScan) {
