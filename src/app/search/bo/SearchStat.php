@@ -19,7 +19,7 @@ class SearchStat extends ObjectAdapter {
 	 * @param string $text
 	 * @param int $resultAmount
 	 */
-	public function __construct(string $text = null, int $resultAmount = null) {
+	public function __construct(?string $text = null, ?int $resultAmount = null) {
 		$this->text = $text;
 		$this->resultAmount = $resultAmount;
 		$this->searchAmount = 1;

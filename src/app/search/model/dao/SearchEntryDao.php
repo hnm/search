@@ -81,7 +81,7 @@ class SearchEntryDao implements RequestScoped {
 	 * Returns Search entries sorted by lastChecked date.
 	 * @return SearchEntry[]
 	 */
-	public function getSearchEntriesSortedByDate(int $num = null) {
+	public function getSearchEntriesSortedByDate(?int $num = null) {
 		return $this->em->createSimpleCriteria(SearchEntry::getClass(), null, 
 				array('lastChecked' => 'ASC'), $num)->toQuery()->fetchArray();
 	}
@@ -103,7 +103,7 @@ class SearchEntryDao implements RequestScoped {
 	 * @param string[] groupKeys
 	 * @return array|false
 	 */
-	public function findSearchEntriesBySearchStr(string $searchStr, N2nLocale $n2nLocale, array $groupKeys = null) {
+	public function findSearchEntriesBySearchStr(string $searchStr, N2nLocale $n2nLocale, ?array $groupKeys = null) {
 		if ($searchStr === '') return array();
 
 		$params = array(':n2nLocale' => $n2nLocale->getId(), ':searchStr' => $searchStr);
@@ -160,7 +160,7 @@ class SearchEntryDao implements RequestScoped {
 	 * @param string|null $groupKey
 	 * @return mixed|null
 	 */
-	public function getSearchGroupByKey(string $groupKey = null) {
+	public function getSearchGroupByKey(?string $groupKey = null) {
 		return $this->em->createSimpleCriteria(SearchGroup::getClass(), array('key' => $groupKey))->toQuery()->fetchSingle();
 	}
 

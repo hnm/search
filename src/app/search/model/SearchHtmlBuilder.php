@@ -38,7 +38,7 @@ class SearchHtmlBuilder {
 	 * Prints {@see SearchHtmlBuilder::getInput()}.
 	 * @param string $buttonLabel
 	 */
-	public function input(array $groupKeys = null, array $attrs = null) {
+	public function input(?array $groupKeys = null, ?array $attrs = null) {
 		$this->view->getHtmlBuilder()->out($this->getInput($groupKeys, $attrs));
 	}
 
@@ -48,7 +48,7 @@ class SearchHtmlBuilder {
 	 * @param string|null $groupKey
 	 * @return HtmlElement
 	 */
-	public function getInput(array $groupKeys = null, array $attrs = null) {
+	public function getInput(?array $groupKeys = null, ?array $attrs = null) {
 		$attrs = HtmlUtils::mergeAttrs(array('class' => 'search-input',
 				'data-search-group-key' => StringUtils::jsonEncode($groupKeys)), $attrs);
 
@@ -63,7 +63,7 @@ class SearchHtmlBuilder {
 	 * @param string $jqueryHideSelector
 	 * @param string $fallback
 	 */
-	public function resultOpen(array $groupKeys = null, string $elementName = 'div', array $attrs = array(), bool $useDefaultCss = true, string $jqueryHideSelector = null, $fallback = '') {
+	public function resultOpen(?array $groupKeys = null, string $elementName = 'div', array $attrs = array(), bool $useDefaultCss = true, ?string $jqueryHideSelector = null, $fallback = '') {
 		$this->view->getHtmlBuilder()->out($this->getResultOpen($groupKeys, $elementName, $attrs, $useDefaultCss, $jqueryHideSelector, $fallback));
 	}
 
@@ -76,8 +76,8 @@ class SearchHtmlBuilder {
 	 * @param string $fallback
 	 * @return Raw
 	 */
-	public function getResultOpen(array $groupKeys = null, string $elementName = 'div', array $attrs = array(),
-			bool $useDefaultCss = true, string $jqueryHideSelector = null, string $fallback = null) {
+	public function getResultOpen(?array $groupKeys = null, string $elementName = 'div', array $attrs = array(),
+			bool $useDefaultCss = true, ?string $jqueryHideSelector = null, ?string $fallback = null) {
 
 		if ($useDefaultCss) {
 			$this->view->getHtmlBuilder()->meta()->addCss('css/style.css', null, 'search');
@@ -213,7 +213,7 @@ class SearchHtmlBuilder {
 		return $ul;
 	}
 	
-	public static function determineDescription(SearchEntry $searchEntry, string $highlight = null) {
+	public static function determineDescription(SearchEntry $searchEntry, ?string $highlight = null) {
 		$description = $searchEntry->getDescription();
 		if (!empty($description)) return $description;
 		if (null === $highlight) return null;

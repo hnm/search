@@ -37,7 +37,7 @@ class SearchController extends ControllerAdapter {
 	 * @param ParamGet $as short for append searchstring (to url)
 	 * @throws JsonDecodeFailedException
 	 */
-	public function index(ParamGet $ss = null, ParamGet $nl = null, ParamGet $gk = null, ParamGet $stat = null, ParamGet $as = null) {
+	public function index(?ParamGet $ss = null, ?ParamGet $nl = null, ?ParamGet $gk = null, ?ParamGet $stat = null, ?ParamGet $as = null) {
 		if ($ss === null || $nl === null) {
 			throw new PageNotFoundException();
 		}

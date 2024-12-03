@@ -26,7 +26,7 @@ class SearchGroup extends ObjectAdapter {
 	private $searchGroupTs;
 	private $searchEntries;
 
-	public function __construct(string $key = null) {
+	public function __construct(?string $key = null) {
 		$this->key = $key;
 		$this->searchGroupTs = new \ArrayObject();
 		$this->searchEntries = new \ArrayObject();

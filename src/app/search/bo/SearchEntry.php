@@ -68,8 +68,8 @@ class SearchEntry extends ObjectAdapter {
 	 * @param string $keywordsStr
 	 * @param string $urlStr
 	 */
-	public function __construct(string $searchableText = null, string $urlStr = null, N2nLocale $n2nLocale = null,
-			string $title = null, string $description = null, string $keywordsStr = null) {
+	public function __construct(?string $searchableText = null, ?string $urlStr = null, ?N2nLocale $n2nLocale = null,
+			?string $title = null, ?string $description = null, ?string $keywordsStr = null) {
 
 		$this->searchableText = $searchableText;
 		$this->setUrlStr($urlStr);
@@ -105,7 +105,7 @@ class SearchEntry extends ObjectAdapter {
 	/**
 	 * @param string|null $title
 	 */
-	public function setTitle(string $title = null) {
+	public function setTitle(?string $title = null) {
 		$this->title = $title;
 	}
 
@@ -119,7 +119,7 @@ class SearchEntry extends ObjectAdapter {
 	/**
 	 * @param string $description
 	 */
-	public function setDescription(string $description = null) {
+	public function setDescription(?string $description = null) {
 		$this->description = $description;
 	}
 
@@ -133,7 +133,7 @@ class SearchEntry extends ObjectAdapter {
 	/**
 	 * @param string $keywordsStr
 	 */
-	public function setKeywordsStr(string $keywordsStr = null) {
+	public function setKeywordsStr(?string $keywordsStr = null) {
 		$this->keywordsStr = $keywordsStr;
 	}
 
@@ -162,7 +162,7 @@ class SearchEntry extends ObjectAdapter {
 	/**
 	 * @param string $urlStr
 	 */
-	public function setUrlStr(string $urlStr = null) {
+	public function setUrlStr(?string $urlStr = null) {
 		if ($urlStr === null) {
 			$this->urlStr = null;
 			return;
@@ -198,7 +198,7 @@ class SearchEntry extends ObjectAdapter {
 	/**
 	 * @param string $group
 	 */
-	public function setGroup(SearchGroup $group = null) {
+	public function setGroup(?SearchGroup $group = null) {
 		$this->group = $group;
 	}
 
@@ -212,7 +212,7 @@ class SearchEntry extends ObjectAdapter {
 	/**
 	 * @param \DateTime $lastChecked
 	 */
-	public function setLastChecked(\DateTime $lastChecked = null) {
+	public function setLastChecked(?\DateTime $lastChecked = null) {
 		$this->lastChecked = $lastChecked;
 	}
 }

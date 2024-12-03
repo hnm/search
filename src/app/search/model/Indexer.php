@@ -100,8 +100,8 @@ class Indexer implements RequestScoped {
 	 * @param string|null $lead
 	 * @param N2nLocale $n2nLocale
 	 */
-	public function add($url, string $title,  N2nLocale $n2nLocale, string $searchableText = null,
-			string $keywordsStr = null, string $lead = null, array $allowedQueryParams = array(), string $groupKey = null) {
+	public function add($url, string $title,  N2nLocale $n2nLocale, ?string $searchableText = null,
+			?string $keywordsStr = null, ?string $lead = null, array $allowedQueryParams = array(), ?string $groupKey = null) {
 		Url::create($url);
 		$searchEntry = $this->create($searchableText, $url, $n2nLocale, $allowedQueryParams, $title, $lead, $keywordsStr);
 		$this->addEntry($searchEntry);
@@ -118,7 +118,7 @@ class Indexer implements RequestScoped {
 	 * @param bool $autoDescription
 	 */
 	public function addFromHtml($url, string $searchableHtml,  N2nLocale $n2nLocale,
-			array $allowedQueryParams = array(), string $groupKey = null,
+			array $allowedQueryParams = array(), ?string $groupKey = null,
 			bool $autoTitle = true, bool $autoKeywords = true, bool $autoDescription = true) {
 		$url = Url::create($url);
 
@@ -136,7 +136,7 @@ class Indexer implements RequestScoped {
 	 * @param bool $autoKeywords
 	 * @param bool $autoDescription
 	 */
-	public function addFromHtmlView(View $view, array $allowedQueryParams = array(), string $groupKey = null,
+	public function addFromHtmlView(View $view, array $allowedQueryParams = array(), ?string $groupKey = null,
 				bool $autoTitle = true, bool $autoKeywords = true, bool $autoDescription = true) {
 		if ($this->rocket->isActive()) {
 			return null;
@@ -153,7 +153,7 @@ class Indexer implements RequestScoped {
 	 * Add from Response can only be used right after {@see ControllerAdapter::forward}
 	 * @return SearchEntry
 	 */
-	public function addFromResponse(array $allowedParams = array(), string $groupKey = null, $autoTitle = true, $autoKeywords = true, $autoDescription = true) {
+	public function addFromResponse(array $allowedParams = array(), ?string $groupKey = null, $autoTitle = true, $autoKeywords = true, $autoDescription = true) {
 		if ($this->rocket->isActive()) {
 			return null;
 		}
@@ -260,7 +260,7 @@ class Indexer implements RequestScoped {
 		return $searchEntry;
 	}
 
-	private function getOrCreateGroupByKey(string $key = null) {
+	private function getOrCreateGroupByKey(?string $key = null) {
 		if (null === $key) return null;
 		$group = $this->sed->getSearchGroupByKey($key);
 		if (null !== $group) return $group;
@@ -269,7 +269,7 @@ class Indexer implements RequestScoped {
 	}
 
 	private function createFromHtml($url, array $allowedQueryParams, string $searchableHtml,
-			N2nLocale $n2nLocale, string $groupKey = null, bool $autoTitle = true,
+			N2nLocale $n2nLocale, ?string $groupKey = null, bool $autoTitle = true,
 			bool $autoKeywords = true, bool $autoDescription = true) {
 		$url = Url::create($url);
 
