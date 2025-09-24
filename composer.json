@@ -24,13 +24,13 @@
 		}
 	},
 	"require" : {
-		"n2n/n2n-composer-module-installer" : "^7.1.5",
+		"n2n/n2n-composer-module-installer" : "^7.1.6",
 		"n2n/rocket" : "^2.0.16 || ^3 || ^4",
         "ext-curl": "*"
     },
 	"require-dev" : {
 		"n2n/hangar": "^8.0",
-		"phpunit/phpunit" : "^9.5",
+		"phpunit/phpunit" : "^9.6",
         "n2n/n2n-test" : "7.4.x-dev"
     },
 	"autoload" : {
