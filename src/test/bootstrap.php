@@ -2,8 +2,8 @@
 
 use n2n\core\TypeLoader;
 use n2n\core\N2N;
-use n2n\core\cache\impl\FileN2nCache;
 use n2n\util\io\IoUtils;
+use n2n\core\FileN2nCache;
 
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
