@@ -7,6 +7,7 @@ use search\model\dao\SearchEntryDao;
 use search\bo\SearchEntry;
 use n2n\l10n\N2nLocale;
 use n2n\core\container\TransactionManager;
+use search\batch\SearchBatchJob;
 
 class SearchBatchJobTest extends TestCase {
 

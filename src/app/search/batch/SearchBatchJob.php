@@ -1,12 +1,12 @@
 <?php
-namespace search\controller;
+namespace search\batch;
 
 use n2n\context\Lookupable;
 use search\model\dao\SearchEntryDao;
 use n2n\util\uri\Url;
 use n2n\core\container\TransactionManager;
 use search\bo\SearchEntry;
-use search\bo\UrlCheckStatus;
+use search\model\UrlCheckStatus;
 
 /**
  * Scheduled background job for health monitoring of {@see SearchEntry::$urlStr}'s.
@@ -49,12 +49,9 @@ class SearchBatchJob implements Lookupable {
 		$this->updateSearchEntries($urlChecks, $searchEntryDao, $tm, $now);
 	}
 
-	/**
-	 * @param UrlCheckStatus[] $urlChecks
-	 */
-	protected function checkUrls(array $urlChecks) {
+	protected function checkUrls(array $urlChecks): void {
 		if (empty($urlChecks)) {
-			return [];
+			return;
 		}
 
 		$multi = curl_multi_init();

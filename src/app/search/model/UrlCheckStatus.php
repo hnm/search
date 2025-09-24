@@ -1,6 +1,8 @@
 <?php
-namespace search\bo;
+namespace search\model;
 
+
+use search\bo\SearchEntry;
 
 class UrlCheckStatus {
 	private SearchEntry $searchEntry;
