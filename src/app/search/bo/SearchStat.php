@@ -100,6 +100,6 @@ class SearchStat extends ObjectAdapter {
 			return $text;
 		}
 
-		return mb_substr($text, 0, self::MAX_TEXT_LENGTH - 3) . '...';
+		return substr($text, 0, self::MAX_TEXT_LENGTH - 3) . '...';
 	}
 }

@@ -20,6 +20,7 @@ class SearchStatTest extends TestCase {
 		$mixedText = str_repeat('abc', 60) . str_repeat('äöü', 25); // 180 + 150 = 330 characters
 		$searchStat = new SearchStat($mixedText, 8);
 
+		var_dump($searchStat->getText());
 		$this->assertTrue(strlen($searchStat->getText()) <= SearchStat::MAX_TEXT_LENGTH);
 		$this->assertTrue(mb_strlen($searchStat->getText()) <= SearchStat::MAX_TEXT_LENGTH);
 		$this->assertTrue(str_ends_with($searchStat->getText(), '...'));
