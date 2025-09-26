@@ -26,7 +26,8 @@
 	"require" : {
 		"n2n/n2n-composer-module-installer" : "^7.1.6",
 		"n2n/rocket" : "^2.0.16 || ^3 || ^4",
-        "ext-curl": "*"
+        "ext-curl": "*",
+        "ext-mbstring": "*"
     },
 	"require-dev" : {
 		"n2n/hangar": "^8.0",

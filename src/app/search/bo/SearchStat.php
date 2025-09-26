@@ -9,6 +9,11 @@ use n2n\reflection\ObjectAdapter;
  * @package search\bo
  */
 class SearchStat extends ObjectAdapter {
+	/**
+	 * Maximum length for the text field to match database column limit
+	 */
+	const MAX_TEXT_LENGTH = 255;
+	
 	private $id;
 	private $searchAmount;
 	private $text;
@@ -16,11 +21,11 @@ class SearchStat extends ObjectAdapter {
 
 	/**
 	 * SearchStat constructor.
-	 * @param string $text
-	 * @param int $resultAmount
+	 * @param string|null $text
+	 * @param int|null $resultAmount
 	 */
 	public function __construct(?string $text = null, ?int $resultAmount = null) {
-		$this->text = $text;
+		$this->text = $this->truncateText($text);
 		$this->resultAmount = $resultAmount;
 		$this->searchAmount = 1;
 	}
@@ -50,7 +55,7 @@ class SearchStat extends ObjectAdapter {
 	 * @param string $text
 	 */
 	public function setText(string $text) {
-		$this->text = $text;
+		$this->text = $this->truncateText($text);
 	}
 
 	/**
@@ -79,5 +84,22 @@ class SearchStat extends ObjectAdapter {
 	 */
 	public function setSearchAmount(int $searchAmount) {
 		$this->searchAmount = $searchAmount;
+	}
+	
+	/**
+	 * Truncates text to maximum allowed length minus space for "..." at the end of text if truncated
+	 * @param string|null $text
+	 * @return string|null
+	 */
+	private function truncateText(?string $text): ?string {
+		if ($text === null) {
+			return null;
+		}
+		
+		if (strlen($text) <= self::MAX_TEXT_LENGTH) {
+			return $text;
+		}
+
+		return mb_substr($text, 0, self::MAX_TEXT_LENGTH - 3) . '...';
 	}
 }
