@@ -55,7 +55,12 @@ class SearchBatchJob implements Lookupable {
 		}
 
 		$multi = curl_multi_init();
-		curl_multi_setopt($multi, CURLMOPT_MAX_TOTAL_CONNECTIONS, 15);
+
+		// Guard against environments where CURLMOPT_MAX_TOTAL_CONNECTIONS is missing
+		if (defined('CURLMOPT_MAX_TOTAL_CONNECTIONS')) {
+			curl_multi_setopt($multi, CURLMOPT_MAX_TOTAL_CONNECTIONS, 15);
+		}
+
 		$handles = [];
 
 		foreach ($urlChecks as $urlCheck) {
