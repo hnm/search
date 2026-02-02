@@ -34,5 +34,6 @@
       `text` varchar(255) DEFAULT NULL,
       `result_amount` varchar(255) DEFAULT NULL,
       `search_amount` varchar(255) DEFAULT NULL,
-      PRIMARY KEY (`id`)
+      PRIMARY KEY (`id`),
+      UNIQUE KEY `text` (`text`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
