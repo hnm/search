@@ -7,6 +7,7 @@ use search\bo\SearchEntry;
 class UrlCheckStatus {
 	private SearchEntry $searchEntry;
 	private ?bool $valid;
+	private ?int $httpStatus = null;
 
 	/**
 	 * @param SearchEntry $searchEntry
@@ -27,5 +28,13 @@ class UrlCheckStatus {
 
 	public function setValid(?bool $valid): void {
 		$this->valid = $valid;
+	}
+
+	public function getHttpStatus(): ?int {
+		return $this->httpStatus;
+	}
+
+	public function setHttpStatus(?int $httpStatus): void {
+		$this->httpStatus = $httpStatus;
 	}
 }

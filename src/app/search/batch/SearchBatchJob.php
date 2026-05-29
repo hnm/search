@@ -2,6 +2,7 @@
 namespace search\batch;
 
 use n2n\context\Lookupable;
+use n2n\log4php\Logger;
 use search\model\dao\SearchEntryDao;
 use n2n\util\uri\Url;
 use n2n\core\container\TransactionManager;
@@ -15,11 +16,10 @@ use search\model\UrlCheckStatus;
  * Designed for hourly execution via cron/scheduler.
  */
 class SearchBatchJob implements Lookupable {
-
 	/**
 	 * Amount of checks performed when triggered.
 	 */
-	const SEARCH_ENTRY_URL_HEALTH_CHECK_LIMIT = 200;
+	const SEARCH_ENTRY_URL_HEALTH_CHECK_LIMIT = 12;
 
 	/**
 	 * @param SearchEntryDao $searchEntryDao
@@ -58,7 +58,7 @@ class SearchBatchJob implements Lookupable {
 
 		// Guard against environments where CURLMOPT_MAX_TOTAL_CONNECTIONS is missing
 		if (defined('CURLMOPT_MAX_TOTAL_CONNECTIONS')) {
-			curl_multi_setopt($multi, CURLMOPT_MAX_TOTAL_CONNECTIONS, 15);
+			curl_multi_setopt($multi, CURLMOPT_MAX_TOTAL_CONNECTIONS, 1);
 		}
 
 		$handles = [];
@@ -92,6 +92,7 @@ class SearchBatchJob implements Lookupable {
 
 		foreach ($handles as $url => $ch) {
 			$code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			$urlChecks[$url]->setHttpStatus($code);
 			$urlChecks[$url]->setValid($code >= 200 && $code < 400);
 			curl_multi_remove_handle($multi, $ch);
 			curl_close($ch);
@@ -113,8 +114,17 @@ class SearchBatchJob implements Lookupable {
 		foreach ($urlChecks as $urlCheck) {
 			if ($urlCheck->isValid()) {
 				$urlCheck->getSearchEntry()->setLastChecked($now);
-			} else {
+			} elseif ($urlCheck->isValid() === false) {
 				$dao->removeEntry($urlCheck->getSearchEntry());
+				Logger::getLogger(SearchBatchJob::class)
+						->info('[mdl-search] Valid false Removed SearchEntry after URL health check. URL:' .
+								PHP_EOL . $urlCheck->getSearchEntry()->getUrlStr() .
+								PHP_EOL . '. Http Status:' . $urlCheck->getHttpStatus());
+			} else {
+				Logger::getLogger(SearchBatchJob::class)
+						->info('[mdl-search] Valid null URL health check. URL:' .
+								PHP_EOL . $urlCheck->getSearchEntry()->getUrlStr() .
+								PHP_EOL . '. Http Status:' . $urlCheck->getHttpStatus());
 			}
 		}
 		$tx->commit();
