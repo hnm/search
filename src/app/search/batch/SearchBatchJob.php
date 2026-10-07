@@ -19,7 +19,7 @@ class SearchBatchJob implements Lookupable {
 	/**
 	 * Amount of checks performed when triggered.
 	 */
-	const SEARCH_ENTRY_URL_HEALTH_CHECK_LIMIT = 200;
+	const SEARCH_ENTRY_URL_HEALTH_CHECK_LIMIT = 48;
 
 	/**
 	 * @param SearchEntryDao $searchEntryDao
@@ -58,7 +58,7 @@ class SearchBatchJob implements Lookupable {
 
 		// Guard against environments where CURLMOPT_MAX_TOTAL_CONNECTIONS is missing
 		if (defined('CURLMOPT_MAX_TOTAL_CONNECTIONS')) {
-			curl_multi_setopt($multi, CURLMOPT_MAX_TOTAL_CONNECTIONS, 15);
+			curl_multi_setopt($multi, CURLMOPT_MAX_TOTAL_CONNECTIONS, 4);
 		}
 
 		$handles = [];
@@ -92,7 +92,15 @@ class SearchBatchJob implements Lookupable {
 
 		foreach ($handles as $url => $ch) {
 			$code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-			$urlChecks[$url]->setValid($code >= 200 && $code < 400);
+			if (curl_errno($ch) !== 0) {
+				$urlChecks[$url]->setValid(null);
+			} elseif ($code >= 200 && $code < 400) {
+				$urlChecks[$url]->setValid(true);
+			} elseif (in_array($code, [404, 410], true)) {
+				$urlChecks[$url]->setValid(false);
+			} else {
+				$urlChecks[$url]->setValid(null);
+			}
 			curl_multi_remove_handle($multi, $ch);
 			curl_close($ch);
 		}
@@ -108,13 +116,13 @@ class SearchBatchJob implements Lookupable {
 	 * @return void
 	 */
 	private function updateSearchEntries(array $urlChecks, SearchEntryDao $dao,
-			TransactionManager $tm, \DateTime $now) {
+			TransactionManager $tm, \DateTime $now): void {
 		$tx = $tm->createTransaction();
 		foreach ($urlChecks as $urlCheck) {
-			if ($urlCheck->isValid()) {
-				$urlCheck->getSearchEntry()->setLastChecked($now);
-			} else {
+			if ($urlCheck->isValid() === false) {
 				$dao->removeEntry($urlCheck->getSearchEntry());
+			} else {
+				$urlCheck->getSearchEntry()->setLastChecked($now);
 			}
 		}
 		$tx->commit();
