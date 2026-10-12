@@ -26,7 +26,7 @@ class SearchBatchJob implements Lookupable {
 	 * @param TransactionManager $tm
 	 * @return void
 	 */
-	public function _onNewHour(SearchEntryDao $searchEntryDao, TransactionManager $tm) {
+	public function _onNewHour(SearchEntryDao $searchEntryDao, TransactionManager $tm): void {
 		$searchEntries = $searchEntryDao->getSearchEntriesSortedByDate(self::SEARCH_ENTRY_URL_HEALTH_CHECK_LIMIT);
 		if (empty($searchEntries)) return;
 
