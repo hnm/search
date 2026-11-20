@@ -102,7 +102,6 @@ class SearchBatchJob implements Lookupable {
 				$urlChecks[$url]->setValid(null);
 			}
 			curl_multi_remove_handle($multi, $ch);
-			curl_close($ch);
 		}
 
 		curl_multi_close($multi);

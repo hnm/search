@@ -88,7 +88,6 @@ class SearchController extends ControllerAdapter {
 		foreach ($this->searchEntryDao->getSearchEntriesSortedByDate() as $searchEntry) {
 			$ch = curl_init($searchEntry->getUrlStr());
 			curl_exec($ch);
-			curl_close($ch);
 		}
 	}*/
 }
